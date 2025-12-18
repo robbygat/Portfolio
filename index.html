@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robert Francis</title>
+    <style>
+        /* Ultra Minimalist Reset */
+        :root {
+            --bg-color: #f0f0f0; /* Slightly off-white for depth */
+            --text-color: #000000;
+        }
+        
+        html {
+            scroll-behavior: smooth; /* smooth anchor scroll for section jumps */
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+            width: 100vw;
+            min-height: 100vh;
+            cursor: crosshair; /* Artistic touch */
+            padding-top: 8.5rem; /* extra breathing room so top never feels crowded */
+        }
+
+        /* Fixed Name (Sticks to top) */
+        .artist-name {
+            position: fixed;
+            top: 2rem;
+            left: 2rem; /* Back to left */
+            text-align: left; /* Left align */
+            font-size: 1.4rem; /* Increased size */
+            font-weight: 500; /* Slightly bolder */
+            letter-spacing: -0.04em;
+            z-index: 2000; /* High z-index */
+            mix-blend-mode: exclusion;
+            color: #fff;
+            text-transform: lowercase;
+            line-height: 1.3;
+            pointer-events: auto; /* ensure links are clickable */
+            max-width: 45%; /* Prevent overlapping right side */
+        }
+
+        .artist-name a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.35);
+            padding-bottom: 1px;
+            pointer-events: auto;
+        }
+        
+        .artist-name a:hover {
+            border-bottom-color: rgba(255,255,255,0.9);
+        }
+
+        .artist-name .ig {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            letter-spacing: 0.02em;
+            margin-left: 0.75rem;
+            margin-right: 0;
+            display: inline-block;
+        }
+
+        /* Scrollable Info (Moves away) */
+        .artist-info {
+            position: absolute; /* Scrolls with page */
+            top: 2.2rem; /* Aligned with top */
+            right: 2rem; /* Aligned right */
+            text-align: right;
+            z-index: 1500;
+            mix-blend-mode: exclusion;
+            color: #fff;
+            pointer-events: auto;
+            max-width: 50%; /* Prevent overlapping left side */
+        }
+
+        .artist-info .meta {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.82;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+        }
+
+        .artist-info .roles {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.86;
+            letter-spacing: -0.02em;
+        }
+
+        .artist-info .roles a {
+             /* separate links for touch targets */
+             display: inline-block;
+             margin-left: 0.4rem;
+        }
+        
+        .artist-info a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.35);
+            padding-bottom: 1px;
+        }
+
+        .artist-info a:hover {
+            border-bottom-color: rgba(255,255,255,0.9);
+        }
+
+        /* The Organic Wall */
+        .gallery {
+            padding: 4rem 2rem;
+            column-count: 4;
+            column-gap: 6px; /* gentle whitespace between images */
+            width: 100%;
+        }
+
+        .gallery-item-wrapper {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 6px; /* subtle vertical whitespace */
+            break-inside: avoid;
+            
+            /* Initial state for animation */
+            opacity: 0;
+            transform: translateY(100px) scale(0.95);
+            filter: blur(20px);
+            transition: all 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+            will-change: transform, opacity, filter;
+        }
+
+        .gallery-item {
+            width: 100%;
+            height: auto;
+            display: block;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1); /* Soft shadow for depth */
+        }
+
+        .gallery-item-wrapper.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        /* Overlap Modifiers (applied randomly) */
+        .overlap-top {
+            margin-top: -12px;   /* toned down overlap */
+            z-index: 8;
+            position: relative;
+        }
+        
+        .overlap-bottom {
+            margin-bottom: -10px; /* gentler overlap */
+            z-index: 6;
+            position: relative;
+        }
+        
+        /* Ensure images don't get cut off */
+        .gallery-item-wrapper:hover {
+            z-index: 100 !important;
+            transition-delay: 0s !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1400px) {
+            .gallery { column-count: 3; }
+        }
+        @media (max-width: 900px) {
+            .gallery { column-count: 2; }
+            .overlap-top { margin-top: -8px; }
+            .overlap-bottom { margin-bottom: -6px; }
+        }
+        @media (max-width: 768px) {
+            /* Mobile/Tablet adjustments */
+            .artist-name { 
+                top: 1.5rem; 
+                left: 1.5rem; 
+                font-size: 1.1rem; 
+                max-width: 60%; /* More space for name on mobile */
+            }
+            .artist-info { 
+                top: 1.5rem; 
+                right: 1.5rem; 
+                font-size: 0.85rem; 
+                max-width: 35%; /* Restrict info width to prevent overlap */
+            }
+            /* Hide bulky meta stats on mobile, keep roles */
+            .artist-info .meta { display: none; } 
+            
+            .gallery { column-count: 1; padding: 1rem; }
+            .overlap-top, .overlap-bottom { margin: 0; }
+            
+            body { padding-top: 7rem; } /* Less padding needed on mobile */
+        }
+
+        ::selection {
+            background: #000;
+            color: #fff;
+        }
+
+        /* Footer embeds */
+        .footer {
+            padding: 4rem 2rem 3rem;
+            border-top: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+            gap: 3rem;
+        }
+
+        .footer-block-title {
+            font-size: 0.75rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            opacity: 0.55;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 0.75rem;
+        }
+
+        .footer-links a {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px solid rgba(0,0,0,0.25);
+            margin-right: 0.75rem;
+            padding-bottom: 1px;
+        }
+
+        .footer-links a:hover {
+            border-bottom-color: rgba(0,0,0,0.8);
+        }
+
+        .embed-frame {
+            width: 100%;
+            border: none;
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.14);
+            background: #000;
+        }
+
+        .embed-frame--video {
+            aspect-ratio: 16 / 9;
+            height: auto;
+        }
+
+        @media (max-width: 900px) {
+            .footer-inner {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="artist-name">
+        robert francis
+        <span class="ig">
+            <a href="https://instagram.com/robbygat2" target="_blank" rel="noopener noreferrer">@robbygat2</a>
+        </span>
+        <br>ロバート・フランシス
+    </div>
+    
+    <div class="artist-info">
+        <span class="meta">
+            189 cm · blue eyes · 1/2 irish · 1/4 french · 1/4 polish · 83 kg<br>
+            身長 189cm · 青い目 · アイルランド系 1/2 · フランス系 1/4 · ポーランド系 1/4 · 83kg
+        </span>
+        <span class="roles">
+            model モデル /
+            <a href="#music">musician ミュージシャン</a> /
+            <a href="https://opensea.io/rightclick/created" target="_blank" rel="noopener noreferrer">artist アーティスト</a> /
+            <a href="#actor">actor 俳優</a>
+        </span>
+    </div>
+    
+    <div class="gallery" id="gallery">
+        <!-- Images will be populated by JS -->
+    </div>
+
+    <div class="footer" id="bottom">
+        <div class="footer-inner">
+            <section id="music">
+                <div class="footer-block-title">music · ミュージック</div>
+                <!-- li.sten.to disallows iframes via X-Frame-Options, so we use a full-width minimal card link instead -->
+                <a
+                    href="https://li.sten.to/internetcowboy"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="embed-frame"
+                    style="display:flex;align-items:center;justify-content:center;text-decoration:none;color:#f5f5f5;font-size:0.9rem;letter-spacing:0.12em;text-transform:uppercase;height:320px;"
+                >
+                    internet cowboy · listen
+                </a>
+                <div class="footer-links">
+                    <a href="https://li.sten.to/internetcowboy" target="_blank" rel="noopener noreferrer">open music</a>
+                </div>
+            </section>
+            <section id="actor">
+                <div class="footer-block-title">actor · 俳優</div>
+                <iframe
+                    class="embed-frame embed-frame--video"
+                    src="https://www.youtube.com/embed/9LGdLM29mag"
+                    title="Robert Francis · reel"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowfullscreen
+                    loading="lazy"
+                ></iframe>
+                <div class="footer-links">
+                    <a href="https://www.youtube.com/watch?v=9LGdLM29mag" target="_blank" rel="noopener noreferrer">open video</a>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const gallery = document.getElementById('gallery');
+        const totalImages = 41;
+        const cacheBust = Date.now(); // prevent stale cached images
+        
+        // Fisher-Yates Shuffle
+        function shuffle(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex != 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [
+                    array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        // Create array 1..41
+        const imageIndices = Array.from({length: totalImages}, (_, i) => i + 1);
+        shuffle(imageIndices);
+
+        // Generate Image Nodes with Random Styles
+        imageIndices.forEach((index, i) => {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'gallery-item-wrapper';
+            
+            // Randomly apply gentle overlaps for organic feel (rare and subtle)
+            // Reduced frequency to lower visual stress
+            const random = Math.random();
+            
+            if (random > 0.9) wrapper.classList.add('overlap-top');
+            else if (random < 0.08) wrapper.classList.add('overlap-bottom');
+            
+            const img = document.createElement('img');
+            img.src = `${index}.jpg?cb=${cacheBust}`;
+            img.className = 'gallery-item';
+            img.alt = `Robert Francis Portfolio ${index}`;
+            img.loading = 'lazy';
+            
+            wrapper.appendChild(img);
+            gallery.appendChild(wrapper);
+        });
+
+        // Advanced Intersection Observer for Scroll Reveal
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.05
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add random delay for staggered effect
+                    const delay = Math.random() * 200; 
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, delay);
+                    
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        requestAnimationFrame(() => {
+            const items = document.querySelectorAll('.gallery-item-wrapper');
+            items.forEach(item => observer.observe(item));
+        });
+    </script>
+</body>
+</html>
+
